@@ -5,8 +5,44 @@ const API_URL = 'http://localhost:3001';
 const APP_URL = 'http://localhost:5174';
 
 /**
+ * Helper function to safely extract todo ID and build selectors
+ */
+async function extractTodoIdAndSelectors(page, todoLocator) {
+  const todoDataTestId = await todoLocator.getAttribute('data-testid');
+  console.log('DEBUG: Raw todoDataTestId:', todoDataTestId);
+  
+  if (!todoDataTestId || !todoDataTestId.startsWith('todo-')) {
+    throw new Error(`Invalid todo data-testid: ${todoDataTestId}`);
+  }
+  
+  const todoId = todoDataTestId.replace('todo-', '');
+  console.log('DEBUG: Extracted todoId:', todoId);
+  
+  if (!todoId) {
+    throw new Error('todoId is empty after extraction');
+  }
+  
+  const selectors = {
+    todo: 'todo-' + todoId,
+    toggle: 'toggle-' + todoId,
+    title: 'title-' + todoId,
+    description: 'description-' + todoId,
+    edit: 'edit-' + todoId,
+    delete: 'delete-' + todoId,
+    editTitle: 'edit-title-' + todoId,
+    editDescription: 'edit-description-' + todoId,
+    saveEdit: 'save-edit-' + todoId,
+    cancelEdit: 'cancel-edit-' + todoId
+  };
+  
+  console.log('DEBUG: Built selectors:', selectors);
+  
+  return { todoId, selectors };
+}
+
+/**
  * End-to-end tests for Todo App
- * Fixed version with dynamic ID handling
+ * Fixed version with proper string concatenation instead of template literals
  */
 test.describe('Todo App E2E Tests', () => {
   
@@ -73,12 +109,12 @@ test.describe('Todo App E2E Tests', () => {
     
     // Assert no console errors occurred
     if (consoleErrors.length > 0) {
-      throw new Error(`Console errors detected:\n${consoleErrors.join('\n')}`);
+      throw new Error(`Console errors detected:\\n${consoleErrors.join('\\n')}`);
     }
     
     // Log warnings for informational purposes (don't fail the test)
     if (consoleWarnings.length > 0) {
-      console.log(`Console warnings detected (non-fatal):\n${consoleWarnings.join('\n')}`);
+      console.log(`Console warnings detected (non-fatal):\\n${consoleWarnings.join('\\n')}`);
     }
   });
 
@@ -109,33 +145,38 @@ test.describe('Todo App E2E Tests', () => {
     // Wait for todo to appear (dynamic selector)
     await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
     
-    // Get the actual todo ID from the page
+    // Get the actual todo ID and selectors
     const todoCard = page.locator('[data-testid^="todo-"]').first();
-    const todoId = await todoCard.getAttribute('data-testid').then(id => id.replace('todo-', ''));
+    const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
-    // Perform various todo operations using the actual ID
-    await page.click(`[data-testid="toggle-${todoId}"]`);  // Toggle completion
-    await page.click(`[data-testid="edit-${todoId}"]`);    // Start edit
-    await page.click(`[data-testid="cancel-edit-${todoId}"]`);  // Cancel edit
-    await page.click(`[data-testid="toggle-${todoId}"]`);  // Toggle back
+    // Perform various todo operations using proper selectors
+    await expect(page.locator(`[data-testid="${selectors.toggle}"]`)).toBeVisible();
+    await page.click(`[data-testid="${selectors.toggle}"]`);  // Toggle completion
+    
+    await expect(page.locator(`[data-testid="${selectors.edit}"]`)).toBeVisible();
+    await page.click(`[data-testid="${selectors.edit}"]`);    // Start edit
+    
+    await page.click(`[data-testid="${selectors.cancelEdit}"]`);  // Cancel edit
+    await page.click(`[data-testid="${selectors.toggle}"]`);  // Toggle back
     
     // Wait for all operations to complete
     await page.waitForTimeout(300);
     
     // Delete the todo
-    await page.click(`[data-testid="delete-${todoId}"]`);
+    await expect(page.locator(`[data-testid="${selectors.delete}"]`)).toBeVisible();
+    await page.click(`[data-testid="${selectors.delete}"]`);
     
     // Wait briefly for any async errors
     await page.waitForTimeout(300);
     
     // Assert no console errors occurred during interactions
     if (consoleErrors.length > 0) {
-      throw new Error(`Console errors detected during interactions:\n${consoleErrors.join('\n')}`);
+      throw new Error(`Console errors detected during interactions:\\n${consoleErrors.join('\\n')}`);
     }
     
     // Log warnings for informational purposes
     if (consoleWarnings.length > 0) {
-      console.log(`Console warnings detected during interactions (non-fatal):\n${consoleWarnings.join('\n')}`);
+      console.log(`Console warnings detected during interactions (non-fatal):\\n${consoleWarnings.join('\\n')}`);
     }
   });
 
@@ -183,21 +224,22 @@ test.describe('Todo App E2E Tests', () => {
     await page.fill('[data-testid="todo-title-input"]', 'Complete me');
     await page.click('[data-testid="create-todo-btn"]');
     
-    // Wait for todo to appear and get its ID
+    // Wait for todo to appear and get its selectors
     await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
     const todoCard = page.locator('[data-testid^="todo-"]').first();
-    const todoId = await todoCard.getAttribute('data-testid').then(id => id.replace('todo-', ''));
+    const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
     // Check initial state (not completed)
-    const checkbox = page.locator(`[data-testid="toggle-${todoId}"]`);
+    const checkbox = page.locator(`[data-testid="${selectors.toggle}"]`);
+    await expect(checkbox).toBeVisible();
     await expect(checkbox).not.toBeChecked();
     
     // Toggle to completed
-    await page.click(`[data-testid="toggle-${todoId}"]`);
+    await page.click(`[data-testid="${selectors.toggle}"]`);
     await expect(checkbox).toBeChecked();
     
     // Toggle back to incomplete
-    await page.click(`[data-testid="toggle-${todoId}"]`);
+    await page.click(`[data-testid="${selectors.toggle}"]`);
     await expect(checkbox).not.toBeChecked();
   });
 
@@ -209,28 +251,29 @@ test.describe('Todo App E2E Tests', () => {
     await page.fill('[data-testid="todo-description-input"]', 'Original Description');
     await page.click('[data-testid="create-todo-btn"]');
     
-    // Wait for todo and get ID
+    // Wait for todo and get selectors
     await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
     const todoCard = page.locator('[data-testid^="todo-"]').first();
-    const todoId = await todoCard.getAttribute('data-testid').then(id => id.replace('todo-', ''));
+    const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
     // Start editing
-    await page.click(`[data-testid="edit-${todoId}"]`);
+    await expect(page.locator(`[data-testid="${selectors.edit}"]`)).toBeVisible();
+    await page.click(`[data-testid="${selectors.edit}"]`);
     
     // Edit fields should be visible
-    await expect(page.locator(`[data-testid="edit-title-${todoId}"]`)).toBeVisible();
-    await expect(page.locator(`[data-testid="edit-description-${todoId}"]`)).toBeVisible();
+    await expect(page.locator(`[data-testid="${selectors.editTitle}"]`)).toBeVisible();
+    await expect(page.locator(`[data-testid="${selectors.editDescription}"]`)).toBeVisible();
     
     // Update values
-    await page.fill(`[data-testid="edit-title-${todoId}"]`, 'Updated Title');
-    await page.fill(`[data-testid="edit-description-${todoId}"]`, 'Updated Description');
+    await page.fill(`[data-testid="${selectors.editTitle}"]`, 'Updated Title');
+    await page.fill(`[data-testid="${selectors.editDescription}"]`, 'Updated Description');
     
     // Save changes
-    await page.click(`[data-testid="save-edit-${todoId}"]`);
+    await page.click(`[data-testid="${selectors.saveEdit}"]`);
     
     // Check updated content
-    await expect(page.locator(`[data-testid="title-${todoId}"]`)).toContainText('Updated Title');
-    await expect(page.locator(`[data-testid="description-${todoId}"]`)).toContainText('Updated Description');
+    await expect(page.locator(`[data-testid="${selectors.title}"]`)).toContainText('Updated Title');
+    await expect(page.locator(`[data-testid="${selectors.description}"]`)).toContainText('Updated Description');
   });
 
   test('should cancel todo edit', async ({ page }) => {
@@ -240,22 +283,23 @@ test.describe('Todo App E2E Tests', () => {
     await page.fill('[data-testid="todo-title-input"]', 'Original Title');
     await page.click('[data-testid="create-todo-btn"]');
     
-    // Get todo ID
+    // Get todo selectors
     await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
     const todoCard = page.locator('[data-testid^="todo-"]').first();
-    const todoId = await todoCard.getAttribute('data-testid').then(id => id.replace('todo-', ''));
+    const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
     // Start editing
-    await page.click(`[data-testid="edit-${todoId}"]`);
+    await expect(page.locator(`[data-testid="${selectors.edit}"]`)).toBeVisible();
+    await page.click(`[data-testid="${selectors.edit}"]`);
     
     // Make changes
-    await page.fill(`[data-testid="edit-title-${todoId}"]`, 'Changed Title');
+    await page.fill(`[data-testid="${selectors.editTitle}"]`, 'Changed Title');
     
     // Cancel edit
-    await page.click(`[data-testid="cancel-edit-${todoId}"]`);
+    await page.click(`[data-testid="${selectors.cancelEdit}"]`);
     
     // Original content should remain
-    await expect(page.locator(`[data-testid="title-${todoId}"]`)).toContainText('Original Title');
+    await expect(page.locator(`[data-testid="${selectors.title}"]`)).toContainText('Original Title');
   });
 
   test('should delete a todo', async ({ page }) => {
@@ -265,16 +309,17 @@ test.describe('Todo App E2E Tests', () => {
     await page.fill('[data-testid="todo-title-input"]', 'Delete me');
     await page.click('[data-testid="create-todo-btn"]');
     
-    // Get todo ID
+    // Get todo selectors
     await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
     const todoCard = page.locator('[data-testid^="todo-"]').first();
-    const todoId = await todoCard.getAttribute('data-testid').then(id => id.replace('todo-', ''));
+    const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
     // Delete the todo
-    await page.click(`[data-testid="delete-${todoId}"]`);
+    await expect(page.locator(`[data-testid="${selectors.delete}"]`)).toBeVisible();
+    await page.click(`[data-testid="${selectors.delete}"]`);
     
     // Check the todo is gone
-    await expect(page.locator(`[data-testid="todo-${todoId}"]`)).not.toBeVisible();
+    await expect(page.locator(`[data-testid="${selectors.todo}"]`)).not.toBeVisible();
     await expect(page.locator('text=No todos yet')).toBeVisible();
   });
 
@@ -285,10 +330,10 @@ test.describe('Todo App E2E Tests', () => {
     await page.fill('[data-testid="todo-title-input"]', 'First Todo');
     await page.click('[data-testid="create-todo-btn"]');
     
-    // Wait for first todo and get its ID
+    // Wait for first todo and get its selectors
     await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
     const firstTodoCard = page.locator('[data-testid^="todo-"]').first();
-    const firstTodoId = await firstTodoCard.getAttribute('data-testid').then(id => id.replace('todo-', ''));
+    const { selectors: firstSelectors } = await extractTodoIdAndSelectors(page, firstTodoCard);
     
     // Create second todo
     await page.fill('[data-testid="todo-title-input"]', 'Second Todo');
@@ -297,14 +342,15 @@ test.describe('Todo App E2E Tests', () => {
     // Wait for second todo
     await expect(page.locator('[data-testid^="todo-"]').nth(1)).toBeVisible();
     const secondTodoCard = page.locator('[data-testid^="todo-"]').nth(1);
-    const secondTodoId = await secondTodoCard.getAttribute('data-testid').then(id => id.replace('todo-', ''));
+    const { selectors: secondSelectors } = await extractTodoIdAndSelectors(page, secondTodoCard);
     
     // Check titles
-    await expect(page.locator(`[data-testid="title-${firstTodoId}"]`)).toContainText('First Todo');
-    await expect(page.locator(`[data-testid="title-${secondTodoId}"]`)).toContainText('Second Todo');
+    await expect(page.locator(`[data-testid="${firstSelectors.title}"]`)).toContainText('First Todo');
+    await expect(page.locator(`[data-testid="${secondSelectors.title}"]`)).toContainText('Second Todo');
     
     // Toggle completion for first todo
-    await page.click(`[data-testid="toggle-${firstTodoId}"]`);
+    await expect(page.locator(`[data-testid="${firstSelectors.toggle}"]`)).toBeVisible();
+    await page.click(`[data-testid="${firstSelectors.toggle}"]`);
     
     // Check badge counts
     await expect(page.locator('text=1 Pending')).toBeVisible();
@@ -319,21 +365,22 @@ test.describe('Todo App E2E Tests', () => {
     await page.fill('[data-testid="todo-description-input"]', 'Should survive refresh');
     await page.click('[data-testid="create-todo-btn"]');
     
-    // Get todo ID and toggle completion
+    // Get todo selectors and toggle completion
     await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
     const todoCard = page.locator('[data-testid^="todo-"]').first();
-    const todoId = await todoCard.getAttribute('data-testid').then(id => id.replace('todo-', ''));
+    const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
-    await page.click(`[data-testid="toggle-${todoId}"]`);
+    await expect(page.locator(`[data-testid="${selectors.toggle}"]`)).toBeVisible();
+    await page.click(`[data-testid="${selectors.toggle}"]`);
     
     // Refresh the page
     await page.reload();
     
     // Check todo is still there with correct state
-    await expect(page.locator(`[data-testid="todo-${todoId}"]`)).toBeVisible();
-    await expect(page.locator(`[data-testid="title-${todoId}"]`)).toContainText('Persistent Todo');
-    await expect(page.locator(`[data-testid="description-${todoId}"]`)).toContainText('Should survive refresh');
-    await expect(page.locator(`[data-testid="toggle-${todoId}"]`)).toBeChecked();
+    await expect(page.locator(`[data-testid="${selectors.todo}"]`)).toBeVisible();
+    await expect(page.locator(`[data-testid="${selectors.title}"]`)).toContainText('Persistent Todo');
+    await expect(page.locator(`[data-testid="${selectors.description}"]`)).toContainText('Should survive refresh');
+    await expect(page.locator(`[data-testid="${selectors.toggle}"]`)).toBeChecked();
   });
 
   test('should handle complex workflow with multiple operations', async ({ page }) => {
@@ -346,7 +393,7 @@ test.describe('Todo App E2E Tests', () => {
     
     await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
     const firstTodoCard = page.locator('[data-testid^="todo-"]').first();
-    const firstTodoId = await firstTodoCard.getAttribute('data-testid').then(id => id.replace('todo-', ''));
+    const { selectors: firstSelectors } = await extractTodoIdAndSelectors(page, firstTodoCard);
     
     // Create second todo
     await page.fill('[data-testid="todo-title-input"]', 'Task 2');
@@ -355,30 +402,33 @@ test.describe('Todo App E2E Tests', () => {
     
     await expect(page.locator('[data-testid^="todo-"]').nth(1)).toBeVisible();
     const secondTodoCard = page.locator('[data-testid^="todo-"]').nth(1);
-    const secondTodoId = await secondTodoCard.getAttribute('data-testid').then(id => id.replace('todo-', ''));
+    const { selectors: secondSelectors } = await extractTodoIdAndSelectors(page, secondTodoCard);
     
     // Mark first todo as completed
-    await page.click(`[data-testid="toggle-${firstTodoId}"]`);
+    await expect(page.locator(`[data-testid="${firstSelectors.toggle}"]`)).toBeVisible();
+    await page.click(`[data-testid="${firstSelectors.toggle}"]`);
     
     // Edit second todo
-    await page.click(`[data-testid="edit-${secondTodoId}"]`);
-    await page.fill(`[data-testid="edit-title-${secondTodoId}"]`, 'Updated Task 2');
-    await page.click(`[data-testid="save-edit-${secondTodoId}"]`);
+    await expect(page.locator(`[data-testid="${secondSelectors.edit}"]`)).toBeVisible();
+    await page.click(`[data-testid="${secondSelectors.edit}"]`);
+    await page.fill(`[data-testid="${secondSelectors.editTitle}"]`, 'Updated Task 2');
+    await page.click(`[data-testid="${secondSelectors.saveEdit}"]`);
     
     // Check states
-    await expect(page.locator(`[data-testid="toggle-${firstTodoId}"]`)).toBeChecked();
-    await expect(page.locator(`[data-testid="title-${secondTodoId}"]`)).toContainText('Updated Task 2');
+    await expect(page.locator(`[data-testid="${firstSelectors.toggle}"]`)).toBeChecked();
+    await expect(page.locator(`[data-testid="${secondSelectors.title}"]`)).toContainText('Updated Task 2');
     
     // Check badge counts
     await expect(page.locator('text=1 Pending')).toBeVisible();
     await expect(page.locator('text=1 Done')).toBeVisible();
     
     // Delete completed todo
-    await page.click(`[data-testid="delete-${firstTodoId}"]`);
+    await expect(page.locator(`[data-testid="${firstSelectors.delete}"]`)).toBeVisible();
+    await page.click(`[data-testid="${firstSelectors.delete}"]`);
     
     // Only second todo should remain
-    await expect(page.locator(`[data-testid="todo-${firstTodoId}"]`)).not.toBeVisible();
-    await expect(page.locator(`[data-testid="todo-${secondTodoId}"]`)).toBeVisible();
+    await expect(page.locator(`[data-testid="${firstSelectors.todo}"]`)).not.toBeVisible();
+    await expect(page.locator(`[data-testid="${secondSelectors.todo}"]`)).toBeVisible();
     await expect(page.locator('text=1 Pending')).toBeVisible();
     await expect(page.locator('text=0 Done')).toBeVisible();
   });

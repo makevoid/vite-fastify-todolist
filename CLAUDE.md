@@ -85,6 +85,7 @@ React application with service layer and custom hooks:
 - **Backend**: Unit tests with pytest, covers all API endpoints and edge cases
 - **E2E**: Playwright tests for complete user workflows
 - **Test Isolation**: Each test cleans up data, uses fixtures for setup
+- **IMPORTANT**: Only run headless tests (`npm test`). Never run headed tests (`npm run test:headed`) - only the user can run headed tests for debugging purposes.
 
 ## Configuration Notes
 
