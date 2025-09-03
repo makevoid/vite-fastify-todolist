@@ -1,0 +1,32 @@
+{
+  "name": "todo-e2e-js",
+  "version": "1.0.0",
+  "description": "End-to-End Tests for Todo App - JavaScript Playwright Implementation",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:single": "playwright test --grep",
+    "install-browsers": "playwright install",
+    "install-deps": "playwright install-deps"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "playwright",
+    "e2e",
+    "testing",
+    "todo",
+    "ui"
+  ],
+  "author": "",
+  "license": "MIT"
+}
