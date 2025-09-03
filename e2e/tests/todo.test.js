@@ -142,11 +142,11 @@ test.describe('Todo App E2E Tests', () => {
     await page.fill('[data-testid="todo-description-input"]', 'Test description');
     await page.click('[data-testid="create-todo-btn"]');
     
-    // Wait for todo to appear (dynamic selector)
-    await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
+    // Wait for todo to appear (dynamic selector - exclude form inputs)
+    await expect(page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first()).toBeVisible();
     
     // Get the actual todo ID and selectors
-    const todoCard = page.locator('[data-testid^="todo-"]').first();
+    const todoCard = page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first();
     const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
     // Perform various todo operations using proper selectors
@@ -195,8 +195,8 @@ test.describe('Todo App E2E Tests', () => {
     // Submit the form
     await page.click('[data-testid="create-todo-btn"]');
     
-    // Wait for the todo to appear (use dynamic selector)
-    await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
+    // Wait for the todo to appear (use dynamic selector - exclude form inputs)
+    await expect(page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first()).toBeVisible();
     
     // Check the todo content (use dynamic selectors)
     await expect(page.locator('[data-testid^="title-"]').first()).toContainText('Buy groceries');
@@ -213,7 +213,7 @@ test.describe('Todo App E2E Tests', () => {
     await page.click('[data-testid="create-todo-btn"]');
     
     // Wait for the todo to appear
-    await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
+    await expect(page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first()).toBeVisible();
     await expect(page.locator('[data-testid^="title-"]').first()).toContainText('Simple task');
   });
 
@@ -225,8 +225,8 @@ test.describe('Todo App E2E Tests', () => {
     await page.click('[data-testid="create-todo-btn"]');
     
     // Wait for todo to appear and get its selectors
-    await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
-    const todoCard = page.locator('[data-testid^="todo-"]').first();
+    await expect(page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first()).toBeVisible();
+    const todoCard = page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first();
     const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
     // Check initial state (not completed)
@@ -252,8 +252,8 @@ test.describe('Todo App E2E Tests', () => {
     await page.click('[data-testid="create-todo-btn"]');
     
     // Wait for todo and get selectors
-    await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
-    const todoCard = page.locator('[data-testid^="todo-"]').first();
+    await expect(page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first()).toBeVisible();
+    const todoCard = page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first();
     const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
     // Start editing
@@ -284,8 +284,8 @@ test.describe('Todo App E2E Tests', () => {
     await page.click('[data-testid="create-todo-btn"]');
     
     // Get todo selectors
-    await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
-    const todoCard = page.locator('[data-testid^="todo-"]').first();
+    await expect(page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first()).toBeVisible();
+    const todoCard = page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first();
     const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
     // Start editing
@@ -310,8 +310,8 @@ test.describe('Todo App E2E Tests', () => {
     await page.click('[data-testid="create-todo-btn"]');
     
     // Get todo selectors
-    await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
-    const todoCard = page.locator('[data-testid^="todo-"]').first();
+    await expect(page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first()).toBeVisible();
+    const todoCard = page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first();
     const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
     // Delete the todo
@@ -332,7 +332,7 @@ test.describe('Todo App E2E Tests', () => {
     
     // Wait for first todo and get its selectors
     await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
-    const firstTodoCard = page.locator('[data-testid^="todo-"]').first();
+    const firstTodoCard = page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first();
     const { selectors: firstSelectors } = await extractTodoIdAndSelectors(page, firstTodoCard);
     
     // Create second todo
@@ -340,8 +340,8 @@ test.describe('Todo App E2E Tests', () => {
     await page.click('[data-testid="create-todo-btn"]');
     
     // Wait for second todo
-    await expect(page.locator('[data-testid^="todo-"]').nth(1)).toBeVisible();
-    const secondTodoCard = page.locator('[data-testid^="todo-"]').nth(1);
+    await expect(page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').nth(1)).toBeVisible();
+    const secondTodoCard = page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').nth(1);
     const { selectors: secondSelectors } = await extractTodoIdAndSelectors(page, secondTodoCard);
     
     // Check titles
@@ -366,8 +366,8 @@ test.describe('Todo App E2E Tests', () => {
     await page.click('[data-testid="create-todo-btn"]');
     
     // Get todo selectors and toggle completion
-    await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
-    const todoCard = page.locator('[data-testid^="todo-"]').first();
+    await expect(page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first()).toBeVisible();
+    const todoCard = page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first();
     const { selectors } = await extractTodoIdAndSelectors(page, todoCard);
     
     await expect(page.locator(`[data-testid="${selectors.toggle}"]`)).toBeVisible();
@@ -392,7 +392,7 @@ test.describe('Todo App E2E Tests', () => {
     await page.click('[data-testid="create-todo-btn"]');
     
     await expect(page.locator('[data-testid^="todo-"]').first()).toBeVisible();
-    const firstTodoCard = page.locator('[data-testid^="todo-"]').first();
+    const firstTodoCard = page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').first();
     const { selectors: firstSelectors } = await extractTodoIdAndSelectors(page, firstTodoCard);
     
     // Create second todo
@@ -400,8 +400,8 @@ test.describe('Todo App E2E Tests', () => {
     await page.fill('[data-testid="todo-description-input"]', 'Second task');
     await page.click('[data-testid="create-todo-btn"]');
     
-    await expect(page.locator('[data-testid^="todo-"]').nth(1)).toBeVisible();
-    const secondTodoCard = page.locator('[data-testid^="todo-"]').nth(1);
+    await expect(page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').nth(1)).toBeVisible();
+    const secondTodoCard = page.locator('[data-testid^="todo-"]:not([data-testid*="input"])').nth(1);
     const { selectors: secondSelectors } = await extractTodoIdAndSelectors(page, secondTodoCard);
     
     // Mark first todo as completed

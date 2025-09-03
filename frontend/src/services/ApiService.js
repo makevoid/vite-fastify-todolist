@@ -2,7 +2,7 @@
  * Base API Service class for handling HTTP requests
  */
 class ApiService {
-  constructor(baseURL = import.meta.env.VITE_API_URL || "http://localhost:8000") {
+  constructor(baseURL = import.meta.env.VITE_API_URL || "http://localhost:3000") {
     this.baseURL = baseURL;
   }
 
