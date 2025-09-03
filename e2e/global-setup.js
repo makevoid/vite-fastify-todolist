@@ -59,7 +59,7 @@ async function startBackend() {
   return new Promise((resolve, reject) => {
     const backendPath = join(__dirname, '../backend');
     
-    const backendProcess = spawn('node', ['main.js'], {
+    const backendProcess = spawn('npm', ['start'], {
       cwd: backendPath,
       stdio: ['pipe', 'pipe', 'pipe'],
       env: {

@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Playwright configuration for Todo App E2E tests
@@ -76,17 +76,15 @@ export default defineConfig({
     // },
   ],
 
-  // Local dev server configuration
-  webServer: {
-    command: 'echo "Services should be started externally"',
-    port: 5174,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000, // 2 minutes
-  },
+  // Comment out webServer since we use global setup instead
+  // webServer: {
+  //   command: 'echo "Services should be started externally"',
+  //   port: 5174,
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120 * 1000, // 2 minutes
+  // },
 
   // Output directory for test artifacts
   outputDir: 'test-results/',
 });
 
-// Import devices if needed for cross-browser testing
-const { devices } = require('@playwright/test');

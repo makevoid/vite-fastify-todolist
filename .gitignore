@@ -2,7 +2,5 @@ __pycache__
 *.db
 *.sqlite
 node_modules
-frontend/node_modules
-e2e/node_modules
 test-results
 playwright-report
