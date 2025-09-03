@@ -28,10 +28,11 @@ class ApiService {
   async post(endpoint, data = null) {
     const options = {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {},
     };
 
     if (data) {
+      options.headers["Content-Type"] = "application/json";
       options.body = JSON.stringify(data);
     }
 
