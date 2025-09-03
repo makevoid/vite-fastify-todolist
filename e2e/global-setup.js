@@ -8,7 +8,7 @@ const execAsync = promisify(exec);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Test environment URLs
-const API_URL = 'http://localhost:8001';
+const API_URL = 'http://localhost:3001';
 const APP_URL = 'http://localhost:5174';
 
 /**

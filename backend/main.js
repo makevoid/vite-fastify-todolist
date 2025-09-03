@@ -10,9 +10,19 @@ import { routeSchemas } from './schemas.js';
 function getConfig() {
   const appEnv = process.env.APP_ENV || process.env.NODE_ENV || 'development';
   
+  // Port configuration for different environments
+  let port;
+  if (process.env.PORT) {
+    port = parseInt(process.env.PORT);
+  } else if (appEnv === 'test') {
+    port = 3001;
+  } else {
+    port = 3000;
+  }
+  
   return {
     environment: appEnv,
-    port: appEnv === 'test' ? 8001 : 8000,
+    port: port,
     host: '0.0.0.0',
     logger: appEnv === 'development' ? {
       transport: {
@@ -36,7 +46,7 @@ function getCorsOrigins() {
   if (appEnv === 'test') {
     return ['http://localhost:5174']; // Different port for test frontend
   } else {
-    return ['http://localhost:5173', 'http://localhost:3000'];
+    return ['http://localhost:5173', 'http://localhost:5174']; // Support both dev and test frontend ports
   }
 }
 
