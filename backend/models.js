@@ -11,25 +11,23 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 function getDatabaseConfig() {
   const appEnv = process.env.APP_ENV || process.env.NODE_ENV || 'development';
   
-  if (appEnv === 'test') {
-    // Use in-memory database for tests
-    return new Sequelize('sqlite::memory:', {
-      logging: false, // Disable logging in test mode
-      define: {
-        timestamps: false // Disable timestamps for simplicity
-      }
-    });
-  } else {
-    // Use file-based SQLite database for development/production
-    return new Sequelize({
-      dialect: 'sqlite',
-      storage: join(__dirname, 'todo.db'),
-      logging: appEnv === 'development' ? console.log : false,
-      define: {
-        timestamps: false // Disable timestamps to match Python version
-      }
-    });
-  }
+  // Define environment-specific database files
+  const databaseFiles = {
+    development: join(__dirname, 'todolist_development.sqlite'),
+    test: join(__dirname, 'todolist_test.sqlite'),
+    production: join(__dirname, 'todolist_production.sqlite')
+  };
+  
+  const storage = databaseFiles[appEnv] || databaseFiles.development;
+  
+  return new Sequelize({
+    dialect: 'sqlite',
+    storage: storage,
+    logging: appEnv === 'development' ? console.log : false,
+    define: {
+      timestamps: false // Disable timestamps to match Python version
+    }
+  });
 }
 
 // Initialize database connection

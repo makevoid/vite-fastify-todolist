@@ -38,7 +38,7 @@ class ApiService {
     const response = await fetch(`${this.baseURL}${endpoint}`, options);
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `POST ${endpoint} failed: ${response.statusText}`);
+      throw new Error(errorData.message || errorData.detail || `POST ${endpoint} failed: ${response.statusText}`);
     }
     return response.json();
   }
@@ -58,7 +58,7 @@ class ApiService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `PUT ${endpoint} failed: ${response.statusText}`);
+      throw new Error(errorData.message || errorData.detail || `PUT ${endpoint} failed: ${response.statusText}`);
     }
     return response.json();
   }
@@ -75,7 +75,7 @@ class ApiService {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `DELETE ${endpoint} failed: ${response.statusText}`);
+      throw new Error(errorData.message || errorData.detail || `DELETE ${endpoint} failed: ${response.statusText}`);
     }
     return response.json();
   }

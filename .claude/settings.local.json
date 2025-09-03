@@ -52,7 +52,9 @@
       "Bash(APP_ENV=test timeout 10 python3 main.py)",
       "Read(/Users/makevoid/apps/**)",
       "Bash(npm test)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm start)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []
