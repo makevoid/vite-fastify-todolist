@@ -57,7 +57,7 @@ async function globalSetup() {
  */
 async function startBackend() {
   return new Promise((resolve, reject) => {
-    const backendPath = join(__dirname, '../backend-js');
+    const backendPath = join(__dirname, '../backend');
     
     const backendProcess = spawn('node', ['main.js'], {
       cwd: backendPath,

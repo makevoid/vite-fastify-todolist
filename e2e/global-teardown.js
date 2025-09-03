@@ -76,7 +76,7 @@ async function cleanupProcesses() {
  */
 async function cleanupTestDatabase() {
   try {
-    const testDbPath = join(__dirname, '../backend-js/test_todo.db');
+    const testDbPath = join(__dirname, '../backend/test_todo.db');
     await unlink(testDbPath);
     console.log('🗑️  Test database file removed');
   } catch (error) {

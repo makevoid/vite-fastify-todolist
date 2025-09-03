@@ -36,12 +36,8 @@
   "author": "",
   "license": "MIT",
   "jest": {
-    "preset": "default",
     "testEnvironment": "node",
-    "extensionsToTreatAsEsm": [".js"],
-    "globals": {
-      "NODE_ENV": "test"
-    },
+    "transform": {},
     "testMatch": [
       "**/__tests__/**/*.js",
       "**/?(*.)+(spec|test).js"
