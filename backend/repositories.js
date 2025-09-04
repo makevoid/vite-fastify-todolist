@@ -11,7 +11,7 @@ export class TodoNotFoundException extends Error {
 }
 
 /**
- * Repository pattern for todo data access - handles database operations
+ * Repository pattern for todo data access - handles database operations with Knex
  * Equivalent to Python TodoRepository class
  */
 export class TodoRepository {
@@ -21,9 +21,8 @@ export class TodoRepository {
    */
   static async findAll() {
     try {
-      return await Todo.findAll({
-        order: [['id', 'ASC']] // Consistent ordering
-      });
+      const todos = await Todo.findAll();
+      return todos.sort((a, b) => a.id - b.id); // Consistent ordering
     } catch (error) {
       throw new Error(`Failed to fetch todos: ${error.message}`);
     }
@@ -37,7 +36,7 @@ export class TodoRepository {
    */
   static async findById(todoId) {
     try {
-      const todo = await Todo.findByPk(todoId);
+      const todo = await Todo.findById(todoId);
       if (!todo) {
         throw new TodoNotFoundException(`Todo with id '${todoId}' not found`);
       }
@@ -69,14 +68,43 @@ export class TodoRepository {
   }
 
   /**
-   * Save a todo to the database (update existing)
-   * @param {Object} todo - The todo object to save
+   * Update a todo by ID with partial data
+   * @param {number} todoId - The ID of the todo to update
+   * @param {Object} updateData - Object containing fields to update
+   * @returns {Promise<Object>} The updated todo object
+   * @throws {TodoNotFoundException} When todo is not found
+   */
+  static async updateById(todoId, updateData) {
+    try {
+      // Check if todo exists first
+      const existingTodo = await this.findById(todoId); // This will throw if not found
+      
+      const updatedTodo = await Todo.update(todoId, updateData);
+      if (!updatedTodo) {
+        throw new TodoNotFoundException(`Todo with id '${todoId}' not found`);
+      }
+      
+      return updatedTodo;
+    } catch (error) {
+      if (error instanceof TodoNotFoundException) {
+        throw error;
+      }
+      throw new Error(`Failed to update todo: ${error.message}`);
+    }
+  }
+
+  /**
+   * Save a todo to the database (for compatibility with existing service layer)
+   * @param {Object} todo - The todo object with updates
    * @returns {Promise<Object>} The saved todo object
    */
   static async save(todo) {
     try {
-      await todo.save();
-      return todo;
+      return await Todo.update(todo.id, {
+        title: todo.title,
+        description: todo.description,
+        completed: todo.completed
+      });
     } catch (error) {
       throw new Error(`Failed to save todo: ${error.message}`);
     }
@@ -90,45 +118,16 @@ export class TodoRepository {
    */
   static async deleteById(todoId) {
     try {
-      const todo = await this.findById(todoId); // This will throw if not found
-      await todo.destroy();
-      return true;
+      // Check if todo exists first
+      await this.findById(todoId); // This will throw if not found
+      
+      const deleted = await Todo.delete(todoId);
+      return deleted;
     } catch (error) {
       if (error instanceof TodoNotFoundException) {
         throw error;
       }
       throw new Error(`Failed to delete todo: ${error.message}`);
-    }
-  }
-
-  /**
-   * Update a todo by ID with partial data
-   * @param {number} todoId - The ID of the todo to update
-   * @param {Object} updateData - Object containing fields to update
-   * @returns {Promise<Object>} The updated todo object
-   * @throws {TodoNotFoundException} When todo is not found
-   */
-  static async updateById(todoId, updateData) {
-    try {
-      const todo = await this.findById(todoId); // This will throw if not found
-      
-      // Update only provided fields
-      if (updateData.title !== undefined) {
-        todo.title = updateData.title;
-      }
-      if (updateData.description !== undefined) {
-        todo.description = updateData.description;
-      }
-      if (updateData.completed !== undefined) {
-        todo.completed = updateData.completed;
-      }
-
-      return await this.save(todo);
-    } catch (error) {
-      if (error instanceof TodoNotFoundException) {
-        throw error;
-      }
-      throw new Error(`Failed to update todo: ${error.message}`);
     }
   }
 
@@ -141,8 +140,10 @@ export class TodoRepository {
   static async toggleCompletion(todoId) {
     try {
       const todo = await this.findById(todoId); // This will throw if not found
-      todo.completed = !todo.completed;
-      return await this.save(todo);
+      const updatedTodo = await Todo.update(todoId, {
+        completed: !todo.completed
+      });
+      return updatedTodo;
     } catch (error) {
       if (error instanceof TodoNotFoundException) {
         throw error;
@@ -157,7 +158,8 @@ export class TodoRepository {
    */
   static async count() {
     try {
-      return await Todo.count();
+      const stats = await Todo.getStats();
+      return stats.total;
     } catch (error) {
       throw new Error(`Failed to count todos: ${error.message}`);
     }
@@ -170,10 +172,8 @@ export class TodoRepository {
    */
   static async findByStatus(completed) {
     try {
-      return await Todo.findAll({
-        where: { completed },
-        order: [['id', 'ASC']]
-      });
+      const todos = await Todo.findByStatus(completed);
+      return todos.sort((a, b) => a.id - b.id); // Consistent ordering
     } catch (error) {
       throw new Error(`Failed to fetch todos by status: ${error.message}`);
     }

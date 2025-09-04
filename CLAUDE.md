@@ -46,7 +46,7 @@ The backend follows a layered architecture pattern with clear separation of conc
 - **`controllers.js`** - HTTP request/response handling layer (`TodoController` class)
 - **`services.js`** - Business logic layer (`TodoService` class)
 - **`repositories.js`** - Data access layer (`TodoRepository` class)
-- **`models.js`** - Database models using Sequelize ORM with SQLite
+- **`models.js`** - Database models using Knex query builder with SQLite
 - **`schemas.js`** - Fastify request/response validation schemas
 
 **Key Classes:**
@@ -64,7 +64,7 @@ The frontend uses modern React patterns with service abstraction:
   - `TodoService.js` - Todo-specific API operations
 
 ### Database
-- **SQLite** with **Sequelize ORM**
+- **SQLite** with **Knex.js query builder**
 - Separate databases for development (`todolist_development.sqlite`) and test (`todolist_test.sqlite`)
 - Environment-specific configuration in `main.js`
 
@@ -101,13 +101,13 @@ The frontend uses modern React patterns with service abstraction:
 
 - **Add new API endpoint**: Update `controllers.js`, add route in `main.js`, add schema in `schemas.js`
 - **Add business logic**: Extend `TodoService` class methods
-- **Database changes**: Modify models in `models.js`, run migrations
+- **Database changes**: Modify table schema in `models.js`, run migrations
 - **Frontend API calls**: Extend `TodoService.js` and update `useTodos.js` hook
 - **Add tests**: Backend unit tests in `test_api.test.js`, E2E tests in `e2e/tests/`
 
 ## Technology Stack
 
-- **Backend**: Node.js, Fastify, Sequelize ORM, SQLite, Jest
+- **Backend**: Node.js, Fastify, Knex.js, SQLite, Jest
 - **Frontend**: React, Vite, Chakra UI, TanStack React Query, React Icons
 - **Testing**: Jest (backend), Playwright (E2E)
-- **Database**: SQLite with Sequelize migrations
+- **Database**: SQLite with Knex.js migrations

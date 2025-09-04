@@ -8,7 +8,7 @@
 
 **A professional full-stack todo list application showcasing modern architecture patterns**
 
-*Built with Fastify + React with Comprehensive Testing*
+*Built with Node.js Fastify + React + Comprehensive Testing*
 
 ---
 
@@ -37,13 +37,13 @@ A professional full-stack todo list application built with modern web technologi
 - **RESTful API**: Full CRUD operations with proper HTTP methods and status codes
 - **Data Persistence**: SQLite database with automatic schema management
 - **Error Handling**: Structured error responses with detailed messages
-- **Data Validation**: Comprehensive input validation using Pydantic models
+- **Data Validation**: Comprehensive input validation using Fastify schemas
 - **CORS Support**: Cross-origin requests enabled for development and production
-- **Auto-documentation**: Swagger/OpenAPI docs automatically generated
+- **Auto-documentation**: Swagger/OpenAPI docs with Fastify
 
 ### Technical Excellence
 - **Object-Oriented Architecture**: Clean separation with services, repositories, and controllers
-- **JSDoc Docs**: TypeScript-style comprehensive JavaScript JSDoc comments
+- **Type Safety**: TypeScript-style patterns with comprehensive JSDoc
 - **Modern React**: Hooks-based components with custom hooks for business logic
 - **State Management**: TanStack React Query for server state with caching and synchronization
 - **Testing Strategy**: Multi-layered testing with unit, integration, and end-to-end tests
@@ -51,18 +51,18 @@ A professional full-stack todo list application built with modern web technologi
 
 ## 🏗️ Project Structure
 
-### Backend Architecture (Python/FastAPI)
+### Backend Architecture (Node.js/Fastify)
 
 ```
 backend/
-├── main.py              # FastAPI application setup and route definitions
-├── models.py            # Database models using Peewee ORM
-├── schemas.py           # Pydantic models for request/response validation
-├── services.py          # Business logic layer with service classes
-├── controllers.py       # HTTP request/response handling layer
-├── repositories.py      # Data access layer with repository pattern
-├── test_api.py         # Unit and integration tests
-└── requirements.txt     # Python dependencies
+├── main.js              # Fastify application setup and route definitions
+├── models.js            # Database models using Knex query builder
+├── schemas.js           # Fastify schemas for request/response validation
+├── services.js          # Business logic layer with service classes
+├── controllers.js       # HTTP request/response handling layer
+├── repositories.js      # Data access layer with repository pattern
+├── test_api.test.js     # Jest unit and integration tests
+└── package.json         # Node.js dependencies
 ```
 
 **Object-Oriented Design Patterns:**
@@ -70,7 +70,7 @@ backend/
 - **Service Layer**: `TodoService` handles all business logic operations
 - **Repository Pattern**: `TodoRepository` manages data access and response model conversion
 - **Controller Layer**: `TodoController` handles HTTP concerns and error translation
-- **Custom Exceptions**: Domain-specific exceptions for better error handling
+- **Custom Error Handling**: Structured error responses with proper HTTP status codes
 - **Dependency Injection**: Clean separation of concerns with minimal coupling
 
 ### Frontend Architecture (React/Vite)
@@ -103,7 +103,7 @@ frontend/
 
 ```
 e2e/
-├── test_todo_e2e.py    # Comprehensive user workflow tests
+├── tests/todo.test.js   # Comprehensive user workflow tests (Playwright)
 └── pyproject.toml      # Test configuration
 ```
 
@@ -125,7 +125,7 @@ e2e/
 
 Our testing strategy follows the **Testing Pyramid** principle with three distinct layers that each serve specific purposes:
 
-#### 🔬 **Backend Unit Tests** (`test_api.py`) - **12 Blazing Fast Tests**
+#### 🔬 **Backend Unit Tests** (`test_api.test.js`) - **12 Blazing Fast Tests**
 **Lightning-fast API validation in under 0.5 seconds**
 
 **🎯 What We Test**:
@@ -141,7 +141,7 @@ Our testing strategy follows the **Testing Pyramid** principle with three distin
 - 📊 **Complete coverage** - Every API endpoint tested
 - 🛡️ **Bulletproof reliability** - Zero flaky tests
 
-#### 🌐 **End-to-End Tests** (`test_todo_e2e.py`) - **13 Real-World Scenarios**
+#### 🌐 **End-to-End Tests** (`e2e/tests/todo.test.js`) - **13 Real-World Scenarios**
 **Complete user journey validation with real browser interactions**
 
 **🎭 What We Test**:
@@ -175,18 +175,17 @@ Our testing strategy follows the **Testing Pyramid** principle with three distin
 </div>
 
 ### Prerequisites
-- **Python 3.11+** 🐍
 - **Node.js 18+** 📦 
-- **npm/yarn** ⚙️
+- **npm** ⚙️
 
 ### 1. Clone & Setup
 ```bash
 git clone <repository-url>
-cd vite-python-fastapi-todolist
+cd vite-koajs-todolist
 
-# Backend setup 🐍
+# Backend setup 🚀
 cd backend
-pip install -r requirements.txt
+npm install
 
 # Frontend setup ⚛️
 cd ../frontend
@@ -195,9 +194,9 @@ npm install
 
 ### 2. Development Mode
 ```bash
-# Terminal 1: Backend (Port 8000) 🚀
+# Terminal 1: Backend (Port 3000) 🚀
 cd backend
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+npm run dev
 
 # Terminal 2: Frontend (Port 5173) ⚡
 cd frontend
@@ -206,22 +205,24 @@ npm run dev
 
 ### 3. Run Tests 🧪
 ```bash
-# 🔬 Backend unit tests (12 tests, 0.45s)
+# 🔬 Backend unit tests (12 tests, fast)
 cd backend
-pytest test_api.py -v
+npm test
 
-# 🌐 End-to-end tests (13 tests, 10.4s)
-cd e2e && python3 -m pytest test_todo_e2e.py -v
+# 🌐 End-to-end tests (13 tests)
+cd e2e
+npm test
 
 # ⚡ Quick smoke test
-python3 -m pytest test_todo_e2e.py::TestTodoAppE2E::test_app_title -v
+cd e2e
+npm run test:e2e
 ```
 
 <div align="center">
 
 ### 🎉 **That's it! Your todo app is live!**
 
-**Frontend**: http://localhost:5173 | **API**: http://localhost:8000 | **Docs**: http://localhost:8000/docs
+**Frontend**: http://localhost:5173 | **API**: http://localhost:3000
 
 </div>
 
@@ -266,9 +267,8 @@ POST /api/todos/1/toggle
 
 ### Key Development URLs
 - **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
-- **Alternative API docs**: http://localhost:8000/redoc
+- **Backend API**: http://localhost:3000
+- **Health Check**: http://localhost:3000/health
 
 ### Project Structure Overview
 ```
@@ -306,7 +306,7 @@ vite-python-fastapi-todolist/
 
 ### 🚀 **Backend Powerhouse**  
 - 🔥 **FastAPI Framework** - Auto-generated OpenAPI documentation
-- 🗃️ **SQLite + Peewee ORM** - Lightweight, powerful data persistence
+- 🗃️ **SQLite + Knex.js** - Lightweight, powerful data persistence
 - 🎯 **Full CRUD Operations** - Complete REST API with proper HTTP codes
 - 🛡️ **Pydantic Validation** - Type-safe input validation and serialization
 - 📡 **CORS Ready** - Cross-origin support for seamless frontend integration
@@ -356,7 +356,7 @@ This todo application demonstrates several advanced development patterns:
 
 1. **Development Setup**: Follow the Quick Start guide
 2. **Testing**: Ensure all tests pass before submitting changes
-   - Run backend tests: `pytest test_api.py -v`
+   - Run backend tests: `cd backend && npm test`
    - Run E2E tests: `python3 -m pytest test_todo_e2e.py -v`
 3. **Code Style**: Follow existing patterns and maintain consistent formatting
 4. **Documentation**: Update README if adding new features or changing APIs

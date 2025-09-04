@@ -1,4 +1,4 @@
-import { Sequelize, DataTypes } from 'sequelize';
+import knex from 'knex';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -6,7 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Database configuration based on environment
- * @returns {Sequelize} Configured Sequelize instance
+ * @returns {knex.Knex} Configured Knex instance
  */
 function getDatabaseConfig() {
   const appEnv = process.env.APP_ENV || process.env.NODE_ENV || 'development';
@@ -20,51 +20,23 @@ function getDatabaseConfig() {
   
   const storage = databaseFiles[appEnv] || databaseFiles.development;
   
-  return new Sequelize({
-    dialect: 'sqlite',
-    storage: storage,
-    logging: appEnv === 'development' ? console.log : false,
-    define: {
-      timestamps: false // Disable timestamps to match Python version
-    }
+  return knex({
+    client: 'sqlite3',
+    connection: {
+      filename: storage
+    },
+    useNullAsDefault: true,
+    debug: appEnv === 'development'
   });
 }
 
 // Initialize database connection
-export const sequelize = getDatabaseConfig();
+export const db = getDatabaseConfig();
 
 /**
- * Todo model - equivalent to Python Peewee Todo model
- * @class Todo
+ * Todo table schema definition
  */
-export const Todo = sequelize.define('Todo', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-    field: 'id'
-  },
-  title: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    field: 'title'
-  },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-    defaultValue: '',
-    field: 'description'
-  },
-  completed: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false,
-    field: 'completed'
-  }
-}, {
-  tableName: 'todo',
-  timestamps: false
-});
+export const TODO_TABLE = 'todo';
 
 /**
  * Initialize database and create tables
@@ -72,12 +44,23 @@ export const Todo = sequelize.define('Todo', {
  */
 export async function initDatabase() {
   try {
-    await sequelize.authenticate();
+    // Test database connection
+    await db.raw('SELECT 1');
     console.log('Database connection established successfully.');
     
-    // Create tables if they don't exist (equivalent to Python create_tables)
-    await sequelize.sync({ force: false });
-    console.log('Database tables synchronized.');
+    // Create todo table if it doesn't exist
+    const hasTable = await db.schema.hasTable(TODO_TABLE);
+    if (!hasTable) {
+      await db.schema.createTable(TODO_TABLE, (table) => {
+        table.increments('id').primary();
+        table.string('title').notNullable();
+        table.text('description').notNullable().defaultTo('');
+        table.boolean('completed').notNullable().defaultTo(false);
+      });
+      console.log('Database tables created.');
+    } else {
+      console.log('Database tables already exist.');
+    }
   } catch (error) {
     console.error('Unable to connect to the database:', error);
     throw error;
@@ -90,7 +73,7 @@ export async function initDatabase() {
  */
 export async function closeDatabase() {
   try {
-    await sequelize.close();
+    await db.destroy();
     console.log('Database connection closed.');
   } catch (error) {
     console.error('Error closing database:', error);
@@ -99,15 +82,112 @@ export async function closeDatabase() {
 }
 
 /**
- * Reset database for testing - equivalent to Python test fixture
+ * Reset database for testing
  * @returns {Promise<void>}
  */
 export async function resetDatabase() {
   try {
-    await sequelize.sync({ force: true }); // Drop and recreate tables
+    // Drop table if exists and recreate
+    await db.schema.dropTableIfExists(TODO_TABLE);
+    await db.schema.createTable(TODO_TABLE, (table) => {
+      table.increments('id').primary();
+      table.string('title').notNullable();
+      table.text('description').notNullable().defaultTo('');
+      table.boolean('completed').notNullable().defaultTo(false);
+    });
     console.log('Database reset completed.');
   } catch (error) {
     console.error('Error resetting database:', error);
     throw error;
+  }
+}
+
+/**
+ * Todo class for data operations
+ */
+export class Todo {
+  /**
+   * Create a new todo
+   * @param {Object} data - Todo data
+   * @returns {Promise<Object>} Created todo
+   */
+  static async create(data) {
+    const [id] = await db(TODO_TABLE).insert({
+      title: data.title,
+      description: data.description || '',
+      completed: data.completed || false
+    });
+    
+    return await Todo.findById(id);
+  }
+
+  /**
+   * Find todo by ID
+   * @param {number} id - Todo ID
+   * @returns {Promise<Object|null>} Todo or null
+   */
+  static async findById(id) {
+    const todo = await db(TODO_TABLE).where({ id }).first();
+    return todo || null;
+  }
+
+  /**
+   * Find all todos
+   * @returns {Promise<Array>} Array of todos
+   */
+  static async findAll() {
+    return await db(TODO_TABLE).select('*');
+  }
+
+  /**
+   * Update todo by ID
+   * @param {number} id - Todo ID
+   * @param {Object} data - Update data
+   * @returns {Promise<Object|null>} Updated todo or null
+   */
+  static async update(id, data) {
+    const updateData = {};
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.completed !== undefined) updateData.completed = data.completed;
+
+    const updated = await db(TODO_TABLE).where({ id }).update(updateData);
+    if (updated === 0) return null;
+    
+    return await Todo.findById(id);
+  }
+
+  /**
+   * Delete todo by ID
+   * @param {number} id - Todo ID
+   * @returns {Promise<boolean>} True if deleted, false if not found
+   */
+  static async delete(id) {
+    const deleted = await db(TODO_TABLE).where({ id }).del();
+    return deleted > 0;
+  }
+
+  /**
+   * Count todos by status
+   * @returns {Promise<Object>} Count object with total, completed, pending
+   */
+  static async getStats() {
+    const total = await db(TODO_TABLE).count('* as count').first();
+    const completed = await db(TODO_TABLE).where({ completed: true }).count('* as count').first();
+    
+    return {
+      total: total.count,
+      completed: completed.count,
+      pending: total.count - completed.count
+    };
+  }
+
+  /**
+   * Find todos by completion status
+   * @param {boolean} completed - Completion status
+   * @returns {Promise<Array>} Array of todos
+   */
+  static async findByStatus(completed) {
+    return await db(TODO_TABLE).where({ completed }).select('*');
   }
 }
