@@ -8,7 +8,7 @@
 
 **A professional full-stack todo list application showcasing modern architecture patterns**
 
-*Built with FastAPI + React + Comprehensive Testing*
+*Built with Fastify + React with Comprehensive Testing*
 
 ---
 
