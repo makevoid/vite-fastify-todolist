@@ -8,7 +8,7 @@
 
 **A professional full-stack todo list application showcasing modern architecture patterns**
 
-*Built with FastAPI + React + TypeScript patterns + Comprehensive Testing*
+*Built with FastAPI + React + Comprehensive Testing*
 
 ---
 
@@ -43,7 +43,7 @@ A professional full-stack todo list application built with modern web technologi
 
 ### Technical Excellence
 - **Object-Oriented Architecture**: Clean separation with services, repositories, and controllers
-- **Type Safety**: TypeScript-style patterns in JavaScript with comprehensive JSDoc
+- **JSDoc Docs**: TypeScript-style comprehensive JavaScript JSDoc comments
 - **Modern React**: Hooks-based components with custom hooks for business logic
 - **State Management**: TanStack React Query for server state with caching and synchronization
 - **Testing Strategy**: Multi-layered testing with unit, integration, and end-to-end tests
